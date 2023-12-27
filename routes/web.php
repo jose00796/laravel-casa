@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Jobs\Logger;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,9 +16,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    Logger::dispatch();
 });
 
 Route::post('register-users', [App\Http\Controllers\UserController::class, 'registerUser']);
+Route::put('validate-users', [App\Http\Controllers\UserController::class, 'validateUser']);
 Route::put('active-users', [App\Http\Controllers\UserController::class, 'ActiveUser']);
 Route::delete('delete-users/{id_user}', [App\Http\Controllers\UserController::class, 'deleteUser']);

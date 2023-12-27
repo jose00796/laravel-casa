@@ -12,6 +12,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Str;
 
 use App\Mail\ActiveUser;
+use App\Mail\ValidateUser;
+use Illuminate\Contracts\Validation\Validator as ValidationValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -65,12 +67,46 @@ class UserController extends Controller
         return response()->json(compact('user', 'token'), 201);
     }
 
+    public function validateUser(Request $request)
+    {
+        Log::info($request);
+        $validator = Validator::make($request->all(), [
+            'user_name' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+
+        $user = User::where([
+            'user_name' => $request['user_name']
+        ])->get();
+
+        if ($user->count()) {
+            $api_token = Str::random(50);
+            User::query()->where('user_name', $request->user_name)->update(['api_token' => $api_token]);
+
+            $email = DB::table('users')->where('user_name', $request->user_name)->value('email');
+
+            Mail::to($email)->send(new ValidateUser($request->user_name, $api_token));
+            
+        }else {
+            return response()->json(['error' => 'User does not exists im DB'], 400);
+        }
+
+        return response()->json(['message' => 'User validated successfull'], 200);
+    }
+
     public function ActiveUser(Request $request)
     {
         Log::info($request);
         $validator = Validator::make($request->all(), [
             'user_name' => 'required|string'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->toJson(), 400);
+        }
 
         $user = User::where([
             'user_name' => $request['user_name']
