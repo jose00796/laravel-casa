@@ -17,4 +17,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('register-users', [App\Http\Controllers\AuthController::class, 'registerUser']);
+Route::post('register-users', [App\Http\Controllers\UserController::class, 'registerUser']);
+Route::put('active-users', [App\Http\Controllers\UserController::class, 'ActiveUser']);
+Route::delete('delete-users/{id_user}', [App\Http\Controllers\UserController::class, 'deleteUser']);

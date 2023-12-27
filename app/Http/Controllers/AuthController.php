@@ -29,53 +29,6 @@ class AuthController extends Controller
      * @return JsonResponse
      */
 
-    public function allUsers()
-    {
-        $data = User::all();
-        return response()->json($data, 200);
-    }
-
-    public function registerUser(Request $request)
-    {
-        Log::info($request);
-        $validator = Validator::make($request->all(), [
-            'user_name' => 'required',
-            'name' => 'required',
-            'lastname' => 'required',
-            'email' => 'required|string|email|max:255|unique:users',
-            
-            'password' => ['required',
-                Password::min(8)
-                ->letters()
-                ->mixedCase()
-                ->numbers()
-            ],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(), 400);
-        }
-
-        $user = User::where([
-            'user_name' => $request['user_name']
-        ])->get();
-
-        if ($user->count()) {
-            return response()->json(['error', 'User exists'], 400);
-        }
-
-        $user = User::create([
-            'user_name' => $request->get('user_name'),
-            'name' => $request->get('name'),
-            'lastname' => $request->get('lastname'),
-            'email' => Str::lower($request->get('email')),
-            'password' => Hash::make($request->get('password')),
-        ]);
-
-        $token = JWTAuth::fromUser($user);
-        return response()->json(compact('user', 'token'), 201);
-    }
-
     public function login(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -134,4 +87,6 @@ class AuthController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60,
         ]);
     }
+
+    
 }
